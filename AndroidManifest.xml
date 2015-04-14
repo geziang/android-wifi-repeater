@@ -7,6 +7,9 @@
     <uses-sdk 
         android:minSdkVersion="8" 
         android:targetSdkVersion="21" />
+	
+	<uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />   
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />  
 
     <application
         android:icon="@drawable/ic_launcher"
@@ -19,6 +22,13 @@
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+		<activity
+            android:label="@string/app_name"
+            android:name=".EnableActivity" >
+            <intent-filter >
+                <action android:name="android.intent.action.MAIN" />
             </intent-filter>
         </activity>
     </application>

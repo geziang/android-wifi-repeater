@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent">
+
+	<HorizontalScrollView
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content">
+
+		<LinearLayout
+			android:layout_height="wrap_content"
+			android:layout_width="wrap_content"
+			android:orientation="vertical"
+			android:padding="10dp">
+
+			<TextView
+				android:layout_height="wrap_content"
+				android:text="@string/step2"
+				android:layout_width="wrap_content"
+				android:textIsSelectable="true"
+				android:scrollHorizontally="false"/>
+
+			<Button
+				android:layout_height="wrap_content"
+				android:text="@string/btnconnectwifi"
+				android:layout_width="wrap_content"
+				android:id="@+id/activityenablebtnconnectwifi"/>
+
+			<Button
+				android:enabled="false"
+				android:layout_height="wrap_content"
+				android:text="@string/btnenablehotspot"
+				android:layout_width="wrap_content"
+				android:layout_marginTop="10dp"
+				android:id="@+id/activityenablebtnenablehotspot"/>
+
+			<LinearLayout
+				android:layout_height="wrap_content"
+				android:layout_width="100dp"
+				android:orientation="horizontal"
+				android:layout_marginTop="10dp">
+
+				<TextView
+					android:layout_height="wrap_content"
+					android:text="@string/lblinterface"
+					android:layout_width="wrap_content"/>
+
+				<EditText
+					android:layout_height="wrap_content"
+					android:ems="10"
+					android:layout_width="match_parent"
+					android:text="p2p0"
+					android:id="@+id/activityenable_edt_interface"/>
+
+			</LinearLayout>
+
+			<LinearLayout
+				android:layout_height="wrap_content"
+				android:layout_width="400dp"
+				android:orientation="vertical"
+				android:layout_marginTop="10dp">
+
+				<TextView
+					android:layout_height="wrap_content"
+					android:text="wpa_supplicant.conf"
+					android:layout_width="wrap_content"/>
+
+				<EditText
+					android:layout_height="wrap_content"
+					android:ems="10"
+					android:layout_width="match_parent"
+					android:text="/data/misc/wifi/wpa_supplicant.conf"
+					android:id="@+id/activityenable_edt_configfile"/>
+
+			</LinearLayout>
+
+			<Button
+				android:enabled="false"
+				android:layout_height="wrap_content"
+				android:text="@string/btnstart"
+				android:layout_width="wrap_content"
+				android:layout_marginTop="10dp"
+				android:id="@+id/activityenablebtnstart"/>
+
+			<TextView
+				android:layout_height="wrap_content"
+				android:layout_width="wrap_content"
+				android:textIsSelectable="true"
+				android:id="@+id/activityenabletvcmd"/>
+
+		</LinearLayout>
+
+	</HorizontalScrollView>
+
+</ScrollView>
+

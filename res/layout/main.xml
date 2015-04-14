@@ -1,13 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:gravity="center"
-    android:orientation="vertical" >
+<ScrollView
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/hello" />
+	<HorizontalScrollView
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content">
 
-</LinearLayout>
+		<LinearLayout
+			android:layout_height="wrap_content"
+			android:layout_width="wrap_content"
+			android:orientation="vertical"
+			android:padding="10dp">
+
+			<TextView
+				android:layout_height="wrap_content"
+				android:text="@string/step1"
+				android:layout_width="wrap_content"
+				android:textIsSelectable="true"
+				android:scrollHorizontally="false"/>
+
+			<Button
+				android:layout_height="wrap_content"
+				android:text="@string/btnenable"
+				android:layout_width="wrap_content"
+				android:id="@+id/main_btn_enable"/>
+
+			<Button
+				android:layout_height="wrap_content"
+				android:text="@string/btndisable"
+				android:layout_width="wrap_content"
+				android:layout_marginTop="10dp"
+				android:id="@+id/main_btn_disable"/>
+
+			<TextView
+				android:layout_height="wrap_content"
+				android:text="Text"
+				android:layout_width="wrap_content"
+				android:id="@+id/maintvifconfig"
+				android:textIsSelectable="true"/>
+
+		</LinearLayout>
+
+	</HorizontalScrollView>
+
+</ScrollView>
+

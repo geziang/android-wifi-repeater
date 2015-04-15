@@ -40,8 +40,10 @@ public class MainActivity extends Activity implements OnClickListener
 					"iptables -t nat -F"};
 
 				ShellUtils.execCommand(cmd,true);
+				WifiUtils.setWifiApEnabled(this,false);
 				WifiUtils.toggleWiFi(this,true);
 				Toast.makeText(this,"操作完成",Toast.LENGTH_LONG).show();
+				finish();
 				break;
 			
 		}

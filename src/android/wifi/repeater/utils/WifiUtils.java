@@ -14,20 +14,21 @@ public class WifiUtils
         wifiManager.setWifiEnabled(enabled);  
     }
 	
-	public static boolean EnableWifiAp(Context context,String ApSSID,String ApPassword) {
+	public static boolean setWifiApEnabled(Context context,Boolean enabled) {
 		WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
 		// disable WiFi in any case
-		toggleWiFi(context,false);
+		if (enabled)
+		{
+			toggleWiFi(context,false);
+		}
 		try {
-			WifiConfiguration apConfig = new WifiConfiguration();
-			apConfig.SSID = ApSSID;
-			apConfig.preSharedKey = ApPassword;
 			//通过反射调用设置热点
 			Method method = wifiManager.getClass().getMethod(
 				"setWifiApEnabled", WifiConfiguration.class, Boolean.TYPE);
 			//返回热点打开状态
-			return (Boolean) method.invoke(wifiManager, apConfig, true);
+			return (Boolean) method.invoke(wifiManager, null, enabled);
 		} catch (Exception e) {
+			e.printStackTrace();
 			return false;
 		}
 	}

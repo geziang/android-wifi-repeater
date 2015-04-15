@@ -11,6 +11,8 @@ import android.provider.*;
 
 public class EnableActivity extends Activity implements OnClickListener 
 {
+	private volatile Boolean canexit = true;
+	private Handler mHandler = new Handler();
 	private TextView tvCmd;
 	private Button btnConnectWifi,btnEnableHotspot,btnStart;
 	private EditText edtInterface,edtConfigfile;
@@ -44,32 +46,83 @@ public class EnableActivity extends Activity implements OnClickListener
 				btnEnableHotspot.setEnabled(true);
 				break;
 			case R.id.activityenablebtnenablehotspot:
-				startActivity(getHotspotSetting());
+				if (WifiUtils.setWifiApEnabled(this,true))
+				{
+					Toast.makeText(this,"热点启动成功",Toast.LENGTH_LONG).show();
+				}
+				else
+				{
+					Toast.makeText(this,"热点启动失败，请手动打开",Toast.LENGTH_LONG).show();
+					startActivity(getHotspotSetting());
+				}
 				btnStart.setEnabled(true);
 				break;
 			case R.id.activityenablebtnstart:
 				btnStart.setEnabled(false);
-				String sinterface = edtInterface.getText().toString();
-				String sconfigfile = edtConfigfile.getText().toString();
-				String[] cmd = {"busybox ifconfig "+sinterface+" up",
+				canexit = false;
+				final String sinterface = edtInterface.getText().toString();
+				final String sconfigfile = edtConfigfile.getText().toString();
+				final EnableActivity that = this;
+				new Thread(new Runnable() {
+						public void run() {
+							String[] cmd1 = {"busybox ifconfig "+sinterface+" up",
 								"cd /data/misc/wifi",
-					"wpa_supplicant -B -i "+sinterface+" -c "+sconfigfile,
-					"sleep 10",
-					"iwconfig "+sinterface,
-					"dhcpcd "+sinterface,
-					"echo '1'> /proc/sys/net/ipv4/ip_forward",
-					"iptables -F",
-					"iptables -P INPUT ACCEPT",
-					"iptables -P FORWARD ACCEPT",
-					"iptables -t nat -A POSTROUTING -o "+sinterface+" -j MASQUERADE"};
+								"wpa_supplicant -B -i "+sinterface+" -c "+sconfigfile,
+								};
+
+							final ShellUtils.CommandResult cr1 = ShellUtils.execCommand(cmd1,true);
+							mHandler.post(new Runnable() {
+									public void run()
+									{
+										tvCmd.setText("wpa_supplicant:\n" + cr1.successMsg + "stderr:\n" + cr1.errorMsg + "==============================\n");
+										tvCmd.setText(tvCmd.getText() + "请稍候...\n");
+									}
+								});
+							try
+							{
+								Thread.sleep(10000);
+							}
+							catch (Exception e)
+							{
+								e.printStackTrace();
+							}
+							String[] cmd2 = {
+								"iwconfig "+sinterface,
+								"dhcpcd "+sinterface,
+								"echo '1'> /proc/sys/net/ipv4/ip_forward",
+								"iptables -F",
+								"iptables -P INPUT ACCEPT",
+								"iptables -P FORWARD ACCEPT",
+								"iptables -t nat -A POSTROUTING -o "+sinterface+" -j MASQUERADE"
+							};
+							final ShellUtils.CommandResult cr2 = ShellUtils.execCommand(cmd2,true);
+							mHandler.post(new Runnable() {
+									public void run()
+									{
+										tvCmd.setText(tvCmd.getText() + cr2.successMsg + "stderr:\n" + cr2.errorMsg);
+										tvCmd.setText(tvCmd.getText() + "\n操作完成");
+										Toast.makeText(that,"操作完成",Toast.LENGTH_LONG).show();
+									}
+								});
+							canexit = true;
+						}
+					}).start();
 				
-				ShellUtils.CommandResult cr = ShellUtils.execCommand(cmd,true);
-				tvCmd.setText(cr.successMsg + "error:\n" + cr.errorMsg);
-				Toast.makeText(this,"操作完成",Toast.LENGTH_LONG).show();
 				break;
 				
 		}
 
+	}
+	
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		if (keyCode == KeyEvent.KEYCODE_BACK) {
+			if (canexit) {
+				finish();
+			}
+			return true;
+		}
+		return super.onKeyDown(keyCode, event);
 	}
 	
 	private static Intent getHotspotSetting()

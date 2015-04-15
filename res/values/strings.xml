@@ -3,6 +3,13 @@
 
     <string name="app_name">安卓Wifi中继</string>
 	<string name="lblinterface">接口:</string>
+	<string name="tips_pleasewait">请稍候...</string>
+	<string name="tips_completed">操作完成</string>
+	<string name="tips_reboot">强烈建议您重启手机</string>
+	<string name="tipshotspotenabled">热点启动成功,请稍候...</string>
+	<string name="tipshotspotenableerr">热点启动失败，请手动打开</string>
+	<string name="tips_err_invalidfile">错误！无效文件 </string>
+	<string name="tips_err_cannotfindnet">错误！未找到指定网络 </string>
 	<string name="btnenable">打开Wifi中继</string>
 	<string name="btndisable">关闭Wifi中继</string>
 	<string name="btnconnectwifi">连接源AP</string>
@@ -12,6 +19,7 @@
 		只有支持此功能的手机有可能成功\n
 		请确保您的手机已root并且安装有busybox和iptables\n
 		建议关闭防火墙类软件\n
+		出现任何异常情况，重启手机即可恢复\n
 		http://user.qzone.qq.com/592823270/blog/1428849574\n
 		接口数据(请确认p2p0或类似名称的接口):</string>
 	<string name="step2">请依次执行以下操作:</string>

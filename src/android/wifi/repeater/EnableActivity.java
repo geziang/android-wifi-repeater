@@ -14,6 +14,7 @@ public class EnableActivity extends Activity implements OnClickListener
 	private volatile Boolean canexit = true;
 	private Handler mHandler = new Handler();
 	private TextView tvCmd;
+	private TextView tvSSID;
 	private Button btnConnectWifi,btnEnableHotspot,btnStart;
 	private EditText edtInterface,edtConfigfile;
 	
@@ -25,6 +26,7 @@ public class EnableActivity extends Activity implements OnClickListener
         setContentView(R.layout.activity_enable);
 		
 		tvCmd = (TextView) findViewById(R.id.activityenabletvcmd);
+		tvSSID = (TextView) findViewById(R.id.activityenable_tv_ssid);
 		edtInterface = (EditText) findViewById(R.id.activityenable_edt_interface);
 		edtConfigfile = (EditText) findViewById(R.id.activityenable_edt_configfile);
 		btnConnectWifi = (Button) findViewById(R.id.activityenablebtnconnectwifi);
@@ -37,73 +39,114 @@ public class EnableActivity extends Activity implements OnClickListener
     }
 	
 	@Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data)
+	{
+        tvSSID.setText(WifiUtils.getWiFiSSID(this));
+    }
+	
+	@Override
 	public void onClick(View v) {
 		switch (v.getId()) {
 			case R.id.activityenablebtnconnectwifi:
-				WifiUtils.toggleWiFi(this,false);
 				WifiUtils.toggleWiFi(this,true);
-				startActivity(getWifiSetting());
+				startActivityForResult(getWifiSetting(),0);
 				btnEnableHotspot.setEnabled(true);
 				break;
 			case R.id.activityenablebtnenablehotspot:
 				if (WifiUtils.setWifiApEnabled(this,true))
 				{
-					Toast.makeText(this,"热点启动成功",Toast.LENGTH_LONG).show();
+					Toast.makeText(this,getString(R.string.tipshotspotenabled),Toast.LENGTH_LONG).show();
 				}
 				else
 				{
-					Toast.makeText(this,"热点启动失败，请手动打开",Toast.LENGTH_LONG).show();
+					Toast.makeText(this,getString(R.string.tipshotspotenableerr),Toast.LENGTH_LONG).show();
 					startActivity(getHotspotSetting());
 				}
-				btnStart.setEnabled(true);
+				Runnable runnable=new Runnable(){
+					@Override
+					public void run() {
+						btnStart.setEnabled(true);
+					} 
+				};
+				mHandler.postDelayed(runnable, 10000);
 				break;
 			case R.id.activityenablebtnstart:
 				btnStart.setEnabled(false);
 				canexit = false;
+				final String SSID = tvSSID.getText().toString();
 				final String sinterface = edtInterface.getText().toString();
 				final String sconfigfile = edtConfigfile.getText().toString();
 				final EnableActivity that = this;
+				final String errinvfile = getString(R.string.tips_err_invalidfile);
+				final String errcannotfindnet = getString(R.string.tips_err_cannotfindnet);
+				final String pleasewait = getString(R.string.tips_pleasewait);
+				final String completed = getString(R.string.tips_completed);
 				new Thread(new Runnable() {
 						public void run() {
-							String[] cmd1 = {"busybox ifconfig "+sinterface+" up",
-								"cd /data/misc/wifi",
-								"wpa_supplicant -B -i "+sinterface+" -c "+sconfigfile,
+							String conf = getConf(sconfigfile,SSID);
+							if (conf.equals("fileerr"))
+							{
+								mHandler.post(new Runnable() {
+										public void run()
+										{
+											tvCmd.setText(errinvfile+sconfigfile);
+											btnStart.setEnabled(true);
+										}
+									});
+							}
+							else if (conf.equals("nosuchwifi"))
+							{
+								mHandler.post(new Runnable() {
+										public void run()
+										{
+											tvCmd.setText(errcannotfindnet+SSID);
+											btnStart.setEnabled(true);
+										}
+									});
+							}
+							else
+							{
+								String[] cmd1 = {"busybox ifconfig "+sinterface+" up",
+									"cd /data/misc/wifi",
+									"wpa_supplicant -B -i "+sinterface+" -c "+sconfigfile,
 								};
 
-							final ShellUtils.CommandResult cr1 = ShellUtils.execCommand(cmd1,true);
-							mHandler.post(new Runnable() {
-									public void run()
-									{
-										tvCmd.setText("wpa_supplicant:\n" + cr1.successMsg + "stderr:\n" + cr1.errorMsg + "==============================\n");
-										tvCmd.setText(tvCmd.getText() + "请稍候...\n");
-									}
-								});
-							try
-							{
-								Thread.sleep(10000);
+								final ShellUtils.CommandResult cr1 = ShellUtils.execCommand(cmd1,true);
+								mHandler.post(new Runnable() {
+										public void run()
+										{
+											tvCmd.setText("wpa_supplicant:\n" + cr1.successMsg + "stderr:\n" + cr1.errorMsg + "==============================\n");
+											tvCmd.setText(tvCmd.getText() + pleasewait + "\n");
+										}
+									});
+								try
+								{
+									Thread.sleep(10000);
+								}
+								catch (Exception e)
+								{
+									e.printStackTrace();
+								}
+								String[] cmd2 = {
+									"iwconfig "+sinterface,
+									"dhcpcd "+sinterface,
+									"echo '1'> /proc/sys/net/ipv4/ip_forward",
+									"iptables -F",
+									"iptables -P INPUT ACCEPT",
+									"iptables -P FORWARD ACCEPT",
+									"iptables -t nat -A POSTROUTING -o "+sinterface+" -j MASQUERADE"
+								};
+								final ShellUtils.CommandResult cr2 = ShellUtils.execCommand(cmd2,true);
+								mHandler.post(new Runnable() {
+										public void run()
+										{
+											tvCmd.setText(tvCmd.getText() + cr2.successMsg + "stderr:\n" + cr2.errorMsg);
+											tvCmd.setText(tvCmd.getText() + "\n" + completed);
+											Toast.makeText(that,completed,Toast.LENGTH_LONG).show();
+										}
+									});
 							}
-							catch (Exception e)
-							{
-								e.printStackTrace();
-							}
-							String[] cmd2 = {
-								"iwconfig "+sinterface,
-								"dhcpcd "+sinterface,
-								"echo '1'> /proc/sys/net/ipv4/ip_forward",
-								"iptables -F",
-								"iptables -P INPUT ACCEPT",
-								"iptables -P FORWARD ACCEPT",
-								"iptables -t nat -A POSTROUTING -o "+sinterface+" -j MASQUERADE"
-							};
-							final ShellUtils.CommandResult cr2 = ShellUtils.execCommand(cmd2,true);
-							mHandler.post(new Runnable() {
-									public void run()
-									{
-										tvCmd.setText(tvCmd.getText() + cr2.successMsg + "stderr:\n" + cr2.errorMsg);
-										tvCmd.setText(tvCmd.getText() + "\n操作完成");
-										Toast.makeText(that,"操作完成",Toast.LENGTH_LONG).show();
-									}
-								});
+							
 							canexit = true;
 						}
 					}).start();
@@ -112,6 +155,62 @@ public class EnableActivity extends Activity implements OnClickListener
 				
 		}
 
+	}
+	
+	private String getConf(String conffile,String sSSID)
+	{
+		ShellUtils.CommandResult cr = ShellUtils.execCommand("cat "+conffile,true);
+		if (cr.result != 0)
+		{
+			return "fileerr";
+		}
+		StringBuilder r = new StringBuilder();
+		String[] ss = cr.successMsg.split("\n");
+		int j = 0;
+		for (int i=0;i<ss.length;i++)
+		{
+			r.append(ss[i] + "\n");
+			if (ss[i].trim().isEmpty())
+			{
+				j = i;
+				break;
+			}
+		}
+		int a = 0,b = 0;
+		for (int i=j;i<ss.length;i++)
+		{
+			if (ss[i].contains(sSSID))
+			{
+				for (int k=i;k>=j;k--)
+				{
+					if (ss[k].startsWith("network="))
+					{
+						a = k;
+						break;
+					}
+				}
+				for (int k=i;k<ss.length;k++)
+				{
+					if (ss[k].endsWith("}"))
+					{
+						b = k;
+						break;
+					}
+				}
+
+				break;
+			}
+		}
+		if ((a==0)&&(b==0))
+		{
+			return "nosuchwifi";
+		}
+		for (int i=a;i<=b;i++)
+		{
+			r.append(ss[i] + "\n");
+		}
+		
+		return r.toString();
 	}
 	
 	@Override

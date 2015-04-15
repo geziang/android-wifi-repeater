@@ -9,6 +9,11 @@ public class WifiUtils
         throw new AssertionError();
     }
 	
+	public static String getWiFiSSID(Context context) {  
+        WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        return wifiManager.getConnectionInfo().getSSID(); 
+    }
+	
 	public static void toggleWiFi(Context context, boolean enabled) {  
         WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         wifiManager.setWifiEnabled(enabled);  

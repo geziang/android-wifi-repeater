@@ -12,6 +12,7 @@ import java.io.*;
 
 public class EnableActivity extends Activity implements OnClickListener 
 {
+	private String WPACONF = "wpa_supplicant2.conf";
 	private volatile Boolean canexit = true;
 	private Handler mHandler = new Handler();
 	private TextView tvCmd;
@@ -57,6 +58,7 @@ public class EnableActivity extends Activity implements OnClickListener
 				if (WifiUtils.setWifiApEnabled(this,true))
 				{
 					Toast.makeText(this,getString(R.string.tipshotspotenabled),Toast.LENGTH_LONG).show();
+					tvCmd.setText(getString(R.string.tips_pleasewait));
 				}
 				else
 				{
@@ -67,6 +69,7 @@ public class EnableActivity extends Activity implements OnClickListener
 					@Override
 					public void run() {
 						btnStart.setEnabled(true);
+						tvCmd.setText("");
 					} 
 				};
 				mHandler.postDelayed(runnable, 10000);
@@ -107,9 +110,12 @@ public class EnableActivity extends Activity implements OnClickListener
 							}
 							else
 							{
+								StoreConf(conf);
 								String[] cmd1 = {"busybox ifconfig "+sinterface+" up",
 									"cd /data/misc/wifi",
-									"wpa_supplicant -B -i "+sinterface+" -c "+sconfigfile,
+									"busybox cp /data/data/"+getPackageName()+"/files/"+WPACONF+" ./",
+									"busybox chmod 664 "+WPACONF,
+									"wpa_supplicant -B -i "+sinterface+" -c "+WPACONF,
 								};
 
 								final ShellUtils.CommandResult cr1 = ShellUtils.execCommand(cmd1,true);
@@ -236,6 +242,21 @@ public class EnableActivity extends Activity implements OnClickListener
 			return true;
 		}
 		return super.onKeyDown(keyCode, event);
+	}
+	
+	private void StoreConf(final String conf) {
+		try {
+			String tag = WPACONF;
+			FileOutputStream fos = this.openFileOutput(tag, Context.MODE_PRIVATE);
+			fos.write(conf.getBytes());
+			fos.flush();
+			fos.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();      
+		} catch (IOException e) {
+			e.printStackTrace();
+
+		}
 	}
 	
 	private static Intent getHotspotSetting()

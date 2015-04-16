@@ -8,6 +8,7 @@ import android.wifi.repeater.utils.*;
 import android.view.View.*;
 import android.content.*;
 import android.provider.*;
+import java.io.*;
 
 public class EnableActivity extends Activity implements OnClickListener 
 {
@@ -159,6 +160,19 @@ public class EnableActivity extends Activity implements OnClickListener
 	
 	private String getConf(String conffile,String sSSID)
 	{
+		String realSSID = sSSID;
+		if ((sSSID.charAt(0)=='"')&&(sSSID.charAt(sSSID.length()-1)=='"'))
+			realSSID = sSSID.substring(1,sSSID.length()-1);
+		String encodedSSID = realSSID;
+		try
+		{
+			encodedSSID = bytesToHexString(realSSID.getBytes("UTF-8"));
+		}
+		catch (UnsupportedEncodingException e)
+		{
+			e.printStackTrace();
+		}
+
 		ShellUtils.CommandResult cr = ShellUtils.execCommand("cat "+conffile,true);
 		if (cr.result != 0)
 		{
@@ -179,7 +193,7 @@ public class EnableActivity extends Activity implements OnClickListener
 		int a = 0,b = 0;
 		for (int i=j;i<ss.length;i++)
 		{
-			if (ss[i].contains(sSSID))
+			if ((ss[i].contains(sSSID))||(ss[i].contains(encodedSSID)))
 			{
 				for (int k=i;k>=j;k--)
 				{
@@ -237,6 +251,22 @@ public class EnableActivity extends Activity implements OnClickListener
 		Intent intent = new Intent();
 		intent.setAction(Settings.ACTION_WIFI_SETTINGS);
 		return intent;
+	}
+	
+	private static String bytesToHexString(byte[] src){
+		StringBuilder stringBuilder =new StringBuilder("");
+		if(src==null||src.length<=0){
+			return null;
+		}
+		for(int i =0; i < src.length; i++){
+			int v = src[i]&0xFF;
+			String hv =Integer.toHexString(v);
+			if(hv.length()<2){
+				stringBuilder.append(0);
+			}
+			stringBuilder.append(hv);
+		}
+		return stringBuilder.toString();
 	}
 	
 }

@@ -137,6 +137,7 @@ public class EnableActivity extends Activity implements OnClickListener
 												tvCmd.setText(tvCmd.getText() + "iwconfig error\n");
 											}
 										});
+									linked = true;
 									try
 									{
 										Thread.sleep(10000);

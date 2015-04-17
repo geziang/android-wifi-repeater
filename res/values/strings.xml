@@ -23,7 +23,7 @@
 		建议关闭防火墙类软件\n
 		已发现中文名的wifi在部分设备上存在问题\n
 		出现任何异常情况，重启手机即可恢复\n
-		http://user.qzone.qq.com/592823270/blog/1428849574\n
+		原理：http://user.qzone.qq.com/592823270/blog/1428849574\n
 		接口数据(请确认p2p0或类似名称的接口):</string>
 	<string name="step2">请依次执行以下操作:</string>
 	

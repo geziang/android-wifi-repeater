@@ -12,7 +12,7 @@ import java.io.*;
 
 public class EnableActivity extends Activity implements OnClickListener 
 {
-	private String WPACONF = "wpa_supplicant2.conf";
+	private String WPACONF = "wpa_supplicant_repeater.conf";
 	private volatile Boolean canexit = true;
 	private Handler mHandler = new Handler();
 	private TextView tvCmd;
@@ -84,6 +84,7 @@ public class EnableActivity extends Activity implements OnClickListener
 				final String errinvfile = getString(R.string.tips_err_invalidfile);
 				final String errcannotfindnet = getString(R.string.tips_err_cannotfindnet);
 				final String pleasewait = getString(R.string.tips_pleasewait);
+				final String errlink = getString(R.string.tips_err_linkerror);
 				final String completed = getString(R.string.tips_completed);
 				new Thread(new Runnable() {
 						public void run() {
@@ -122,36 +123,88 @@ public class EnableActivity extends Activity implements OnClickListener
 								mHandler.post(new Runnable() {
 										public void run()
 										{
-											tvCmd.setText("wpa_supplicant:\n" + cr1.successMsg + "stderr:\n" + cr1.errorMsg + "==============================\n");
+											tvCmd.setText("wpa_supplicant:\n" + cr1.successMsg + "stderr:\n" + cr1.errorMsg + "\n");
 											tvCmd.setText(tvCmd.getText() + pleasewait + "\n");
 										}
 									});
-								try
+								Boolean linked = false;
+								ShellUtils.CommandResult cr_iwconfig = ShellUtils.execCommand("iwconfig "+sinterface,true);
+								if (cr_iwconfig.result != 0)
 								{
-									Thread.sleep(10000);
+									mHandler.post(new Runnable() {
+											public void run()
+											{
+												tvCmd.setText(tvCmd.getText() + "iwconfig error\n");
+											}
+										});
+									try
+									{
+										Thread.sleep(10000);
+									}
+									catch (Exception e)
+									{
+										e.printStackTrace();
+									}
 								}
-								catch (Exception e)
+								else
 								{
-									e.printStackTrace();
-								}
-								String[] cmd2 = {
-									"iwconfig "+sinterface,
-									"dhcpcd "+sinterface,
-									"echo '1'> /proc/sys/net/ipv4/ip_forward",
-									"iptables -F",
-									"iptables -P INPUT ACCEPT",
-									"iptables -P FORWARD ACCEPT",
-									"iptables -t nat -A POSTROUTING -o "+sinterface+" -j MASQUERADE"
-								};
-								final ShellUtils.CommandResult cr2 = ShellUtils.execCommand(cmd2,true);
-								mHandler.post(new Runnable() {
-										public void run()
+									for (int i=0;i<10;i++)
+									{
+										cr_iwconfig = ShellUtils.execCommand("iwconfig "+sinterface,true);
+										if (cr_iwconfig.successMsg.contains(SSID))
 										{
-											tvCmd.setText(tvCmd.getText() + cr2.successMsg + "stderr:\n" + cr2.errorMsg);
-											tvCmd.setText(tvCmd.getText() + "\n" + completed);
-											Toast.makeText(that,completed,Toast.LENGTH_LONG).show();
+											linked = true;
+											break;
 										}
-									});
+										try
+										{
+											Thread.sleep(1000);
+										}
+										catch (Exception e)
+										{
+											e.printStackTrace();
+										}
+									}
+								}
+								if (linked)
+								{
+									mHandler.post(new Runnable() {
+											public void run()
+											{
+												tvCmd.setText(tvCmd.getText() + "link success!\n" + "==============================\n" + pleasewait + "\n");
+											}
+										});
+									String[] cmd2 = {
+										"dhcpcd "+sinterface,
+										"echo '1'> /proc/sys/net/ipv4/ip_forward",
+										"iptables -F",
+										"iptables -P INPUT ACCEPT",
+										"iptables -P FORWARD ACCEPT",
+										"iptables -t nat -A POSTROUTING -o "+sinterface+" -j MASQUERADE"
+									};
+									final ShellUtils.CommandResult cr2 = ShellUtils.execCommand(cmd2,true);
+									mHandler.post(new Runnable() {
+											public void run()
+											{
+												tvCmd.setText(tvCmd.getText() + cr2.successMsg + "stderr:\n" + cr2.errorMsg);
+												tvCmd.setText(tvCmd.getText() + "\n" + completed);
+												Toast.makeText(that,completed,Toast.LENGTH_LONG).show();
+											}
+										});
+								}
+								else
+								{
+									ShellUtils.execCommand("killall wpa_supplicant",true);
+									mHandler.post(new Runnable() {
+											public void run()
+											{
+												tvCmd.setText(tvCmd.getText() + "\n" + errlink);
+												Toast.makeText(that,errlink,Toast.LENGTH_LONG).show();
+												btnStart.setEnabled(true);
+											}
+										});
+								}
+								
 							}
 							
 							canexit = true;

@@ -3,6 +3,7 @@
 
     <string name="app_name">安卓Wifi中继</string>
 	<string name="lblinterface">接口:</string>
+	<string name="tips_err_linkerror">原网络连接失败，请检查信号！</string>
 	<string name="tips_pleasewait">请稍候...</string>
 	<string name="tips_completed">操作完成</string>
 	<string name="tips_reboot">强烈建议您重启手机</string>
@@ -19,6 +20,7 @@
 		只有支持此功能的手机有可能成功\n
 		请确保您的手机已root并且安装有busybox和iptables\n
 		建议关闭防火墙类软件\n
+		已发现中文名的wifi在部分设备上存在问题\n
 		出现任何异常情况，重启手机即可恢复\n
 		http://user.qzone.qq.com/592823270/blog/1428849574\n
 		接口数据(请确认p2p0或类似名称的接口):</string>

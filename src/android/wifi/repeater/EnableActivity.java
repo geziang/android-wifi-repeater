@@ -15,8 +15,8 @@ public class EnableActivity extends Activity implements OnClickListener
 	private String WPACONF = "wpa_supplicant_repeater.conf";
 	private volatile Boolean canexit = true;
 	private Handler mHandler = new Handler();
-	private TextView tvCmd;
-	private TextView tvSSID;
+	private TextView tvCmd,tvSSID;
+	private CheckBox cbAutoip;
 	private Button btnConnectWifi,btnEnableHotspot,btnStart;
 	private EditText edtInterface,edtConfigfile;
 	
@@ -31,6 +31,7 @@ public class EnableActivity extends Activity implements OnClickListener
 		tvSSID = (TextView) findViewById(R.id.activityenable_tv_ssid);
 		edtInterface = (EditText) findViewById(R.id.activityenable_edt_interface);
 		edtConfigfile = (EditText) findViewById(R.id.activityenable_edt_configfile);
+		cbAutoip = (CheckBox) findViewById(R.id.activityenable_CheckBox_autoip);
 		btnConnectWifi = (Button) findViewById(R.id.activityenablebtnconnectwifi);
 		btnConnectWifi.setOnClickListener(this);
 		btnEnableHotspot = (Button) findViewById(R.id.activityenablebtnenablehotspot);
@@ -80,6 +81,7 @@ public class EnableActivity extends Activity implements OnClickListener
 				final String SSID = tvSSID.getText().toString();
 				final String sinterface = edtInterface.getText().toString();
 				final String sconfigfile = edtConfigfile.getText().toString();
+				final Boolean autoip = cbAutoip.isChecked();
 				final EnableActivity that = this;
 				final String errinvfile = getString(R.string.tips_err_invalidfile);
 				final String errcannotfindnet = getString(R.string.tips_err_cannotfindnet);
@@ -175,8 +177,11 @@ public class EnableActivity extends Activity implements OnClickListener
 												tvCmd.setText(tvCmd.getText() + "link success!\n" + "==============================\n" + pleasewait + "\n");
 											}
 										});
+									String autoipcmd = "";
+									if (autoip)
+										autoipcmd = "dhcpcd "+sinterface;
 									String[] cmd2 = {
-										"dhcpcd "+sinterface,
+										autoipcmd,
 										"echo '1'> /proc/sys/net/ipv4/ip_forward",
 										"iptables -F",
 										"iptables -P INPUT ACCEPT",

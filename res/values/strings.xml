@@ -3,6 +3,7 @@
 
     <string name="app_name">安卓Wifi中继</string>
 	<string name="lblinterface">接口:</string>
+	<string name="lblautoip">自动获取IP地址</string>
 	<string name="tips_err_linkerror">原网络连接失败，请检查信号！</string>
 	<string name="tips_pleasewait">请稍候...</string>
 	<string name="tips_completed">操作完成</string>
